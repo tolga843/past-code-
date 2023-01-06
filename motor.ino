@@ -1,11 +1,20 @@
 #include <Servo.h>
 
-Servo motor;
+Servo leftMotor;
+Servo rightMotor;
 
 void initializeMotor(){
-  motor.attach(4, 1000, 2000);
+  leftMotor.attach(4, MIN_MOTOR_PULSE_WIDTH, MAX_MOTOR_PULSE_WIDTH);
+  rightMotor.attach(5, MIN_MOTOR_PULSE_WIDTH, MAX_MOTOR_PULSE_WIDTH);
+  stopMotors();
 }
 
-void spinMotor(int speed){
-  motor.write(speed); 
+void spinMotors(struct MotorPowers motorPowers){
+  leftMotor.write(motorPowers.LeftMotorPower);
+  rightMotor.write(motorPowers.RightMotorPower);
+}
+
+void stopMotors(){
+  leftMotor.write(0);
+  rightMotor.write(0);
 }

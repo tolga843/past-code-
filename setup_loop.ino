@@ -1,20 +1,23 @@
 void setup() {
+  initializeMotor();
   initializeReceiver();
+  initializeIMU();
   Serial.begin(115200);
 }
 
 void loop() {
-  struct ReceiverCommands cmd = GetReceiverCommands();
+  struct ReceiverCommands receiverCommands = GetReceiverCommands();
+  struct IMU_Values imuValues = GetIMU_Values();
+  if(receiverCommands.Error || imuValues.Error || receiverCommands.Throttle < 20){
+    stopMotors();
+    resetPidVariables();
+    return;
+  }
 
-  Serial.print(cmd.Error);
-  Serial.print(",");
-  Serial.print(cmd.Roll);
-  Serial.print(",");
-  Serial.print(cmd.Pitch);
-  Serial.print(",");
-  Serial.print(cmd.Throttle);
-  Serial.print(",");
-  Serial.print(cmd.Yaw);
-  Serial.println();
+  if(imuValues.NewDataAvailable == false){
+    return;
+  }
 
+  struct MotorPowers motorPowers = calculateMotorPowers(receiverCommands, imuValues);
+  spinMotors(motorPowers);
 }
