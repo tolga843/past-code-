@@ -2,10 +2,18 @@
 
 FUTABA_SBUS sBus;
 
-int prevRollAngle = 0;
-int prevPitchAngle = 0;
-int prevThrottle = 0;
-int prevYawAngle = 0;
+struct ReceiverCommands {
+  int Roll;
+  int Pitch;
+  int Throttle;
+  int Yaw;
+  int Error;
+};
+
+int prevRoll = 0; // bir önceki roll
+int prevPitch = 0; // bir önceki pitch
+int prevThrottle = 0; // bir önceki throttle
+int prevYaw = 0; // bir önceki yaw
 
 unsigned long receiver_last_communication_time = millis();
 
@@ -15,10 +23,10 @@ void initializeReceiver(){
 
 struct ReceiverCommands GetReceiverCommands(){
   struct ReceiverCommands cmd;
-  cmd.RollAngle = prevRollAngle;
-  cmd.PitchAngle = prevPitchAngle;
+  cmd.Roll = prevRoll;
+  cmd.Pitch = prevPitch;
   cmd.Throttle = prevThrottle;
-  cmd.YawAngle = prevYawAngle;
+  cmd.Yaw = prevYaw;
   cmd.Error = false;
 
   sBus.FeedLine();
@@ -31,18 +39,18 @@ struct ReceiverCommands GetReceiverCommands(){
       return cmd;
     }
 
-    receiver_last_communication_time = millis();
-    sBus.toChannels = 0;
+    receiver_last_communication_time = millis();  // millis şuanki zamanı belirtiyor.
+    sBus.toChannels = 0;  // Resetleme işlemi
 
-    cmd.RollAngle = map(sBus.channels[0], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, -QUADCOPTER_MAX_TILT_ANGLE, QUADCOPTER_MAX_TILT_ANGLE);
-    cmd.PitchAngle = map(sBus.channels[1], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, -QUADCOPTER_MAX_TILT_ANGLE, QUADCOPTER_MAX_TILT_ANGLE);
+    cmd.Roll = map(sBus.channels[0], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, -QUADCOPTER_MAX_TILT_ANGLE, QUADCOPTER_MAX_TILT_ANGLE);
+    cmd.Pitch = map(sBus.channels[1], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, -QUADCOPTER_MAX_TILT_ANGLE, QUADCOPTER_MAX_TILT_ANGLE);
     cmd.Throttle = map(sBus.channels[2], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, 0, 180);
-    cmd.YawAngle = map(sBus.channels[3], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, -QUADCOPTER_MAX_TILT_ANGLE, QUADCOPTER_MAX_TILT_ANGLE);
+    cmd.Yaw = map(sBus.channels[3], RECEIVER_MIN_VALUE, RECEIVER_MAX_VALUE, -QUADCOPTER_MAX_TILT_ANGLE, QUADCOPTER_MAX_TILT_ANGLE);
 
-    prevRollAngle = cmd.RollAngle;
-    prevPitchAngle = cmd.PitchAngle;
+    prevRoll = cmd.Roll;
+    prevPitch = cmd.Pitch;
     prevThrottle = cmd.Throttle;
-    prevYawAngle = cmd.YawAngle;
+    prevYaw = cmd.Yaw;
   }else if(millis() - RECEIVER_COMMUNICATION_TIMEOUT > receiver_last_communication_time){
     cmd.Error = true;
   }
